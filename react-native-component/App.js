@@ -1,13 +1,18 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
+import ButtonComponent from './src/ButtonComponent';
+import MyButton from './components/MyButton';
 
 export default function App() {
-  const name = 'React';
-
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>My name is {name}</Text>
-      <StatusBar style="auto" />
+      <Text
+        style={{
+          fontSize: 30,
+          marginBottom: 10,
+        }}
+      >My Button Component</Text>
+      <MyButton />
     </View>
   );
 }
@@ -21,5 +26,6 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 30,
+    marginBottom: 10,
   },
 });
