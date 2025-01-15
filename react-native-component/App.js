@@ -3,11 +3,14 @@ import { StyleSheet, Text, View } from 'react-native';
 import ButtonComponent from './src/ButtonComponent';
 import MyButton from './components/MyButton';
 import Counter from './components/Counter';
+import EventButton from './components/EventButton';
+import EventInput from './components/EventInput';
 
 export default function App() {
   return (
     <View style={styles.container}>
-      <Counter />
+      <EventButton />
+      <EventInput />
     </View>
   );
 }
