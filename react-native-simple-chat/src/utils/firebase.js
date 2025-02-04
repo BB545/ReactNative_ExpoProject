@@ -1,11 +1,11 @@
 import { initializeApp } from 'firebase/app';
 import { createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { getFirestore, collection, doc, setDoc, getDoc } from 'firebase/firestore';
+import { getFirestore, collection, doc, setDoc, getDoc, addDoc, serverTimestamp } from 'firebase/firestore';
 import * as FileSystem from 'expo-file-system';
 import config from '../../firebase.json';
 
 const app = initializeApp(config);
-const db = getFirestore(app);
+export const db = getFirestore(app);
 const Auth = getAuth(app);
 
 // 이미지 URI를 Base64로 변환하는 함수
@@ -52,16 +52,32 @@ export const signup = async ({ email, password, name, photoUrl }) => {
 };
 
 export const getCurrentUser = async () => {
-    const { uid, displayName, email } = Auth.currentUser;
+    const auth = getAuth();
+    const user = auth.currentUser;
 
-    const userRef = doc(db, "users", uid);
+    if (!user) {
+        console.error("No authenticated user found.");
+        return null;
+    }
+
+    const userRef = doc(db, "users", user.uid);
     const userSnap = await getDoc(userRef);
 
     if (userSnap.exists()) {
         const userData = userSnap.data();
-        return { uid, name: displayName, email, photoUrl: userData.photo };
+        return {
+            uid: user.uid,
+            name: user.displayName || "Unknown",
+            email: user.email || "No Email",
+            photoUrl: userData.photo || null,
+        };
     } else {
-        return { uid, name: displayName, email, photoUrl: null };
+        return {
+            uid: user.uid,
+            name: user.displayName || "Unknown",
+            email: user.email || "No Email",
+            photoUrl: null,
+        };
     }
 };
 
@@ -77,4 +93,57 @@ export const updateUserPhoto = async (photoUri) => {
     await setDoc(userRef, { photo: imageBase64 }, { merge: true });
 
     return {name: user.displayName, email: user.email, photoUrl: imageBase64};
+};
+
+export const createChannel = async ({ title, description }) => {
+    try {
+        const auth = getAuth();
+        const user = auth.currentUser;
+
+        if (!user) {
+            throw new Error("User is not authenticated.");
+        }
+
+        const channelsCollection = collection(db, "channels");
+        const newChannelRef = doc(channelsCollection);
+        const id = newChannelRef.id;
+
+        const newChannel = {
+            id,
+            title,
+            description,
+            createdAt: Date.now(),
+            createdBy: user.uid,
+        };
+
+        await setDoc(newChannelRef, newChannel);
+
+        return id;
+    } catch (error) {
+        console.error("Error creating channel:", error);
+        throw error;
+    }
+};
+
+export const createMessage = async ({ channelId, message }) => {
+    try {
+        if (!channelId || !message || !message._id) {
+            throw new Error("Missing required fields: channelId or message._id");
+        }
+
+        const messagesRef = collection(db, "channels", channelId, "messages");
+        const messageDoc = doc(messagesRef, message._id);
+
+        const newMessage = {
+            ...message,
+            createdAt: serverTimestamp(),
+        };
+
+        await setDoc(messageDoc, newMessage);
+
+        return message._id;
+    } catch (error) {
+        console.error("Error sending message:", error);
+        throw error;
+    }
 };

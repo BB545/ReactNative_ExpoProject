@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { ChannelList, Profile } from '../screens';
 import { ThemeContext } from 'styled-components/native';
@@ -18,26 +18,34 @@ const TabBarIcon = ({ focused, name }) => {
     )
 }
 
-const MainTab = () => {
+const MainTab = ({ navigation, route }) => {
     const theme = useContext(ThemeContext);
 
     return (
         <Tab.Navigator
             screenOptions={{
-                headerShown: false,
+                headerTitleAlign: 'center',
                 tabBarActiveTintColor: theme.tabActiveColor,
                 tabBarInactiveTintColor: theme.tabInactiveColor,
             }}
         >
             <Tab.Screen
-                name='Channel List'
+                name='Channels'
                 component={ChannelList}
                 options={{
                     tabBarIcon: ({ focused }) =>
                         TabBarIcon({
                             focused,
                             name: focused ? 'chat-bubble' : 'chat-bubble-outline',
-                        })
+                        }),
+                    headerRight: () => (
+                            <MaterialIcons
+                                name="add"
+                                size={26}
+                                style={{ margin: 10 }}
+                                onPress={() => navigation.navigate('Channel Creation')}
+                            />
+                        ),
                 }}
             />
             <Tab.Screen
