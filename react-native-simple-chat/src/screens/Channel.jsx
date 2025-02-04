@@ -72,7 +72,7 @@ const Channel = ({ navigation, route: { params } }) => {
                 return {
                     _id: doc.id,
                     ...data,
-                    createdAt: data.createdAt ? data.createdAt.toDate() : new Date(), // ✅ Firestore Timestamp 변환
+                    createdAt: data.createdAt ? data.createdAt.toDate() : new Date(),
                 };
             });
             setMessages(list);
